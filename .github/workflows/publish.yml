@@ -28,13 +28,17 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Configure and Publish
+      - name: Config and Publish
         run: |
-          # 1. Configure npm to use your virtual repository 'harryv-npm'
+          # 1. Configure npm (for dependency resolution)
           jf npm-config --global --repo-resolve=harryv-npm --repo-deploy=harryv-npm
 
-          # 2. Bump the version so we don't conflict with previous builds
+          # 2. Bump version
           npm version patch --no-git-tag-version
 
-          # 3. Publish the package
-          npm publish
+          # 3. Publish using JFrog CLI (This is the fix!)
+          # We explicitly verify the build and upload to Artifactory
+          jf npm publish --build-name="Build and Publish npm" --build-number=$GITHUB_RUN_NUMBER
+          
+          # 4. Publish Build Info (Optional but recommended for OIDC visibility)
+          jf rt build-publish "Build and Publish npm" $GITHUB_RUN_NUMBER
