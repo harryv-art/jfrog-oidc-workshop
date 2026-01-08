@@ -1,0 +1,40 @@
+name: Build and Publish npm
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  id-token: write   # <--- This is the key requirement for OIDC!
+  contents: read    # Required to checkout the code
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v4
+        env:
+          JF_URL: https://harryv1.jfrog.io
+        with:
+          oidc-provider-name: github-oidc  # Matches your Integration Name
+          oidc-audience: jfrog-github      # Matches your Audience
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Configure and Publish
+        run: |
+          # 1. Configure npm to use your virtual repository 'harryv-npm'
+          jf npm-config --global --repo-resolve=harryv-npm --repo-deploy=harryv-npm
+
+          # 2. Bump the version so we don't conflict with previous builds
+          npm version patch --no-git-tag-version
+
+          # 3. Publish the package
+          npm publish
