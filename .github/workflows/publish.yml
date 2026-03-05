@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
 
 permissions:
-  id-token: write   # <--- This is the key requirement for OIDC!
+  id-token: write   # <--- This is the key requirement for OIDC!!
   contents: read    # Required to checkout the code
 
 jobs:
